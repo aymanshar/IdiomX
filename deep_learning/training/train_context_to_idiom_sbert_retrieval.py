@@ -1,130 +1,186 @@
 from pathlib import Path
-import pandas as pd
+import sys
 import numpy as np
+import pandas as pd
 
 from sentence_transformers import SentenceTransformer
 from sklearn.metrics.pairwise import cosine_similarity
 
 BASE_DIR = Path(__file__).resolve().parents[2]
+TRAINING_DIR = BASE_DIR / "deep_learning" / "training"
 
-TEST_CSV = BASE_DIR / "deep_learning/datasets/context_to_idiom/test.csv"
-BANK_CSV = BASE_DIR / "deep_learning/datasets/idiom_bank/idiom_bank.csv"
+if str(TRAINING_DIR) not in sys.path:
+    sys.path.append(str(TRAINING_DIR))
 
-OUTPUT_DIR = BASE_DIR / "deep_learning/models/sbert_context_to_idiom_retrieval"
-OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
-
-print("Loading datasets...")
-
-test_df = pd.read_csv(TEST_CSV, low_memory=False)
-bank_df = pd.read_csv(BANK_CSV, low_memory=False)
-
-# Clean
-test_df = test_df[test_df["target_text"].notna()].copy()
-test_df["input_text"] = test_df["input_text"].astype(str).str.strip()
-test_df["target_text"] = test_df["target_text"].astype(str).str.strip()
-
-bank_df = bank_df[bank_df["idiom_canonical"].notna()].copy()
-bank_df["idiom_canonical"] = bank_df["idiom_canonical"].astype(str).str.strip()
-
-# Model
-MODEL_NAME = "sentence-transformers/all-mpnet-base-v2"
-print("Loading model:", MODEL_NAME)
-model = SentenceTransformer(MODEL_NAME)
-
-# Build bank embeddings
-bank_texts = bank_df["retrieval_text_en"].astype(str).tolist()
-bank_idioms = bank_df["idiom_canonical"].astype(str).tolist()
-
-print("Encoding idiom bank...")
-bank_emb = model.encode(
-    bank_texts,
-    batch_size=64,
-    show_progress_bar=True,
-    convert_to_numpy=True,
-    normalize_embeddings=True
+from tools import (
+    ensure_dir,
+    load_csv_checked,
+    ensure_text_pair_columns,
+    ensure_single_text_column,
+    compute_topk_accuracy,
+    compute_mrr,
 )
 
-# Encode contexts
-test_texts = test_df["input_text"].astype(str).tolist()
-test_targets = test_df["target_text"].astype(str).tolist()
 
-print("Encoding test contexts...")
-test_emb = model.encode(
-    test_texts,
-    batch_size=64,
-    show_progress_bar=True,
-    convert_to_numpy=True,
-    normalize_embeddings=True
-)
+DEFAULT_TEST_CSV = BASE_DIR / "deep_learning" / "datasets" / "context_to_idiom" / "test.csv"
+DEFAULT_BANK_CSV = BASE_DIR / "deep_learning" / "datasets" / "idiom_bank" / "idiom_bank.csv"
+DEFAULT_OUTPUT_DIR = BASE_DIR / "deep_learning" / "models" / "sbert_context_to_idiom_retrieval"
+DEFAULT_MODEL_NAME = "sentence-transformers/all-mpnet-base-v2"
 
-print("Computing similarities...")
-sim = cosine_similarity(test_emb, bank_emb)
 
-top1 = 0
-top3 = 0
-top5 = 0
-rr_scores = []
+def run_sbert_retrieval(
+    test_csv: Path = DEFAULT_TEST_CSV,
+    bank_csv: Path = DEFAULT_BANK_CSV,
+    output_dir: Path = DEFAULT_OUTPUT_DIR,
+    model_name: str = DEFAULT_MODEL_NAME,
+    top_k: int = 5,
+    mrr_cutoff: int = 100,
+    batch_size: int = 64,
+    save_outputs: bool = True,
+):
+    """
+    Run SBERT retrieval for Context -> Idiom.
 
-pred_rows = []
+    Returns
+    -------
+    dict
+        {
+            "metrics": dict,
+            "predictions_df": pd.DataFrame
+        }
+    """
 
-for i in range(sim.shape[0]):
+    output_dir = ensure_dir(Path(output_dir))
 
-    scores = sim[i]
-    ranked_idx = np.argsort(scores)[::-1]
+    print("Loading datasets...")
+    test_df = load_csv_checked(Path(test_csv), low_memory=False)
+    bank_df = load_csv_checked(Path(bank_csv), low_memory=False)
 
-    ranked_idioms = [bank_idioms[j] for j in ranked_idx[:5]]
-    gold = test_targets[i]
+    # Clean input test data
+    test_df = test_df[test_df["target_text"].notna()].copy()
+    test_df = ensure_text_pair_columns(test_df, input_col="input_text", target_col="target_text")
 
-    if gold == ranked_idioms[0]:
-        top1 += 1
-    if gold in ranked_idioms[:3]:
-        top3 += 1
-    if gold in ranked_idioms[:5]:
-        top5 += 1
+    bank_df = bank_df[bank_df["idiom_canonical"].notna()].copy()
+    bank_df = ensure_single_text_column(bank_df, col="idiom_canonical")
 
-    rank_pos = None
-    for rank, j in enumerate(ranked_idx[:100], start=1):
-        if bank_idioms[j] == gold:
-            rank_pos = rank
-            break
+    # Build retrieval text dynamically from available bank columns
+    for col in ["idiom_canonical_meaning", "representative_surface"]:
+        if col not in bank_df.columns:
+            bank_df[col] = ""
 
-    rr_scores.append(0 if rank_pos is None else 1.0 / rank_pos)
+    bank_df["idiom_canonical_meaning"] = bank_df["idiom_canonical_meaning"].fillna("").astype(str).str.strip()
+    bank_df["representative_surface"] = bank_df["representative_surface"].fillna("").astype(str).str.strip()
 
-    pred_rows.append({
-        "input_text": test_texts[i],
-        "gold_idiom": gold,
-        "pred_top1": ranked_idioms[0],
-        "pred_top3": " ||| ".join(ranked_idioms[:3]),
-        "pred_top5": " ||| ".join(ranked_idioms[:5]),
-    })
+    bank_df["retrieval_text_en"] = (
+            "Idiom: " + bank_df["idiom_canonical"].astype(str).str.strip() +
+            ". Meaning: " + bank_df["idiom_canonical_meaning"] +
+            ". Example form: " + bank_df["representative_surface"]
+    ).str.strip()
 
-n = sim.shape[0]
+    bank_df = ensure_single_text_column(bank_df, col="retrieval_text_en")
 
-results = {
-    "top1_accuracy": top1 / n,
-    "top3_accuracy": top3 / n,
-    "top5_accuracy": top5 / n,
-    "mrr_at_100": float(np.mean(rr_scores)),
-    "num_test_samples": int(n),
-    "num_bank_idioms": int(len(bank_idioms)),
-}
+    # Remove duplicated idioms in bank if any
+    bank_df = bank_df.drop_duplicates(subset=["idiom_canonical"]).reset_index(drop=True)
 
-print("\nResults:")
-for k, v in results.items():
-    print(f"{k}: {v}")
+    print(f"Test samples: {len(test_df):,}")
+    print(f"Idiom bank size: {len(bank_df):,}")
 
-# Save outputs
-pd.DataFrame(pred_rows).to_csv(
-    OUTPUT_DIR / "test_predictions.csv",
-    index=False,
-    encoding="utf-8-sig"
-)
+    print("Loading model:", model_name)
+    model = SentenceTransformer(model_name)
 
-pd.DataFrame([results]).to_csv(
-    OUTPUT_DIR / "metrics.csv",
-    index=False,
-    encoding="utf-8-sig"
-)
+    # Encode bank
+    bank_texts = bank_df["retrieval_text_en"].tolist()
+    bank_idioms = bank_df["idiom_canonical"].tolist()
 
-print("\nSaved predictions to:", OUTPUT_DIR / "test_predictions.csv")
-print("Saved metrics to:", OUTPUT_DIR / "metrics.csv")
+    print("Encoding idiom bank...")
+    bank_emb = model.encode(
+        bank_texts,
+        batch_size=batch_size,
+        show_progress_bar=True,
+        convert_to_numpy=True,
+        normalize_embeddings=True,
+    )
+
+    # Encode test contexts
+    test_texts = test_df["input_text"].tolist()
+    test_targets = test_df["target_text"].tolist()
+
+    print("Encoding test contexts...")
+    test_emb = model.encode(
+        test_texts,
+        batch_size=batch_size,
+        show_progress_bar=True,
+        convert_to_numpy=True,
+        normalize_embeddings=True,
+    )
+
+    print("Computing similarities...")
+    sim = cosine_similarity(test_emb, bank_emb)
+
+    ranked_predictions = []
+    rr_scores = []
+    pred_rows = []
+
+    for i in range(sim.shape[0]):
+        scores = sim[i]
+        ranked_idx = np.argsort(scores)[::-1]
+
+        ranked_idioms_full = [bank_idioms[j] for j in ranked_idx]
+        ranked_idioms_topk = ranked_idioms_full[:top_k]
+        gold = test_targets[i]
+
+        ranked_predictions.append(ranked_idioms_topk)
+
+        rank_pos = None
+        for rank, pred_idiom in enumerate(ranked_idioms_full[:mrr_cutoff], start=1):
+            if pred_idiom == gold:
+                rank_pos = rank
+                break
+
+        rr_scores.append(0.0 if rank_pos is None else 1.0 / rank_pos)
+
+        pred_rows.append({
+            "input_text": test_texts[i],
+            "gold_idiom": gold,
+            "pred_top1": ranked_idioms_topk[0] if len(ranked_idioms_topk) >= 1 else "",
+            "pred_top3": " ||| ".join(ranked_idioms_topk[:3]),
+            "pred_top5": " ||| ".join(ranked_idioms_topk[:5]),
+        })
+
+    metrics = {
+        "top1_accuracy": compute_topk_accuracy(ranked_predictions, test_targets, k=1),
+        "top3_accuracy": compute_topk_accuracy(ranked_predictions, test_targets, k=3),
+        "top5_accuracy": compute_topk_accuracy(ranked_predictions, test_targets, k=5),
+        "mrr_at_100": float(np.mean(rr_scores)),
+        "num_test_samples": int(len(test_targets)),
+        "num_bank_idioms": int(len(bank_idioms)),
+        "model_name": model_name,
+    }
+
+    predictions_df = pd.DataFrame(pred_rows)
+
+    print("\nResults:")
+    for k, v in metrics.items():
+        print(f"{k}: {v}")
+
+    if save_outputs:
+        predictions_path = output_dir / "test_predictions.csv"
+        metrics_path = output_dir / "metrics.csv"
+
+        predictions_df.to_csv(predictions_path, index=False, encoding="utf-8-sig")
+        pd.DataFrame([metrics]).to_csv(metrics_path, index=False, encoding="utf-8-sig")
+
+        print("\nSaved predictions to:", predictions_path)
+        print("Saved metrics to:", metrics_path)
+
+    return {
+        "metrics": metrics,
+        "predictions_df": predictions_df,
+    }
+
+def main():
+    run_sbert_retrieval()
+
+
+if __name__ == "__main__":
+    main()

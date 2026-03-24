@@ -13,7 +13,7 @@ from typing import Optional
 
 import numpy as np
 import pandas as pd
-
+import sys
 
 def get_project_root(current_file: Optional[str] = None, levels_up: int = 2) -> Path:
     """
@@ -62,6 +62,8 @@ def clean_text_column(series: pd.Series) -> pd.Series:
     """Convert a pandas Series to clean stripped strings."""
     return series.fillna("").astype(str).str.strip()
 
+def clean_text_series(series: pd.Series) -> pd.Series:
+    return series.fillna("").astype(str).str.strip()
 
 def clean_context_target_df(
     df: pd.DataFrame,
@@ -110,3 +112,47 @@ def get_default_data_paths(base_dir: Path) -> dict:
         "splits_dir": base_dir / "data" / "splits",
         "figures_dir": base_dir / "figures",
     }
+
+# Evaluation Metrics (Ranking Tasks)
+# ============================================
+
+def compute_topk_accuracy(predictions, targets, k=1):
+    """
+    predictions: list of lists (ranked predictions per sample)
+    targets: list of true labels
+    """
+    correct = 0
+
+    for preds, target in zip(predictions, targets):
+        if target in preds[:k]:
+            correct += 1
+
+    return correct / len(targets)
+
+
+def compute_mrr(predictions, targets):
+    """
+    Mean Reciprocal Rank
+    """
+    total_score = 0.0
+
+    for preds, target in zip(predictions, targets):
+        if target in preds:
+            rank = preds.index(target) + 1
+            total_score += 1.0 / rank
+
+    return total_score / len(targets)
+
+def ensure_text_pair_columns(df: pd.DataFrame, input_col: str, target_col: str) -> pd.DataFrame:
+    df = df.copy()
+    df[input_col] = clean_text_series(df[input_col])
+    df[target_col] = clean_text_series(df[target_col])
+    df = df[(df[input_col] != "") & (df[target_col] != "")].reset_index(drop=True)
+    return df
+
+
+def ensure_single_text_column(df: pd.DataFrame, col: str) -> pd.DataFrame:
+    df = df.copy()
+    df[col] = clean_text_series(df[col])
+    df = df[df[col] != ""].reset_index(drop=True)
+    return df
