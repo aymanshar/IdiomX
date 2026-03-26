@@ -33,39 +33,59 @@ Supervised by Prof. Hanna Abi Akl
 - Personal: aymanshar@gmail.com  
 
 ---
+## Overview
 
-## Introduction
-IdiomX is a research-driven project for building a large-scale bilingual idiom dataset and benchmark for English–Arabic idiom understanding, retrieval, normalization, and generation. The project combines multi-source idiom collection, large language model (LLM)-based enrichment, quality-controlled validation, and downstream deep learning experiments to support idiomatic language research in both monolingual and cross-lingual settings.
+**IdiomX** is a large-scale bilingual dataset and benchmark designed for **idiomatic expression understanding, retrieval, and generation**.
 
-The core motivation behind IdiomX is that idioms remain a challenging phenomenon for natural language processing systems because their meanings are often non-literal, context-dependent, and culturally grounded. Existing resources are often small, monolingual, weakly contextualized, or not designed for modern transformer-based learning. IdiomX addresses these limitations by providing a reproducible pipeline that transforms a raw idiom collection into a high-quality bilingual benchmark with contextual examples, semantic annotations, surface-form variation, and evaluation-ready splits.
+It provides:
+- **123K+ contextualized examples**
+- **~15K idioms**
+- **English–Arabic semantic alignment**
+- **Rich annotations and multiple NLP tasks**
 
----
-
-## Research Objective
-
-The objective of IdiomX is to construct a reproducible research pipeline for:
-
-- collecting idioms from multiple linguistic resources
-- enriching idiom entries using structured LLM generation
-- validating and correcting generated annotations
-- building benchmark-ready datasets for multiple NLP tasks
-- training and evaluating deep learning models for idiom-related understanding and generation
-
-The project is designed not only as a dataset release but as a complete research framework that supports experimentation, reproducibility, and extension.
+> IdiomX is not just a dataset — it is a **complete research framework** for studying idiomatic language in both monolingual and cross-lingual settings.
 
 ---
 
-## Main Contributions
+## Motivation
 
-IdiomX is designed around the following contributions:
+Idioms are inherently **non-compositional** and **context-dependent**, making them one of the most challenging phenomena in NLP.
 
-1. A large bilingual idiom dataset centered on English idioms with Arabic semantic annotations.
-2. Contextual expansion of idioms into multiple natural example sentences.
-3. Canonical idiom normalization and surface-form modeling.
-4. Cross-lingual semantic annotations supporting Arabic-to-English idiom tasks.
-5. A structured LLM-based enrichment and verification pipeline.
-6. A benchmark design covering multiple downstream idiom understanding tasks.
-7. A reproducible repository structure for collection, enrichment, and deep learning.
+Existing resources are:
+- small
+- monolingual
+- weakly contextualized
+
+IdiomX addresses this gap by combining:
+- multi-source lexical collection  
+- LLM-based enrichment  
+- structured validation  
+- deep learning benchmarks  
+
+---
+
+## Key Contributions
+
+- Large-scale **bilingual idiom dataset (EN–AR)**
+- Context-rich examples (idiomatic + literal usage)
+- Canonical and surface-form modeling
+- Cross-lingual semantic alignment (Arabic ↔ English)
+- Structured LLM-based enrichment and validation pipeline
+- Multi-task benchmark for idiom understanding and generation
+- Reproducible research framework for dataset + modeling
+
+
+---
+
+## Dataset Statistics
+
+| Metric | Value |
+|------|------|
+| Total examples | 123,336 |
+| Unique idioms | 14,986 |
+| Avg examples / idiom | 8.2 |
+| Arabic coverage | 99.99% |
+| Label balance | 50 / 50 |
 
 ---
 
@@ -84,7 +104,8 @@ Final dataset file:
 
 ```text
 data/enriched/idiomx_enriched_final.csv
-
+```
+---
 ## Repository Structure
 
 ```
@@ -107,12 +128,16 @@ data/enriched/idiomx_enriched_final.csv
 	├── paper/
 	└── README.md
 ```
+---
+##Key Contributions
 
-## Project Workflow
-
-```
-
-### Deep Learning
+- Large-scale **bilingual idiom dataset (EN–AR)**
+- Context-rich examples (idiomatic + literal usage)
+- Canonical and surface-form modeling
+- Cross-lingual semantic alignment (Arabic ↔ English)
+- Structured LLM-based enrichment and validation pipeline
+- Multi-task benchmark for idiom understanding and generation
+- Reproducible research framework for dataset + modeling
 
 This module prepares task-specific datasets and trains models for multiple benchmark tasks, including:
 
@@ -126,27 +151,45 @@ A critical design principle is that all train/validation/test splits are created
 
 ## Benchmark Tasks
 
-IdiomX supports multiple research tasks:
+IdiomX supports multiple NLP tasks:
+
+- **Idiom Detection**  
+  Classify idiomatic vs literal usage
+
+- **Context → Idiom Generation**  
+  Predict idiom from context (main contribution)
+
+- **Arabic Context → Idiom**  
+  Cross-lingual generation (EN ← AR)
+
+- **Idiom Meaning Retrieval**
+
+- **Surface Normalization**
+
+---
+
+## Key Research Findings
 
 ### Idiom Detection
+- Transformer models significantly outperform classical baselines
+- DeBERTa achieves the best performance (~0.91 F1)
+- Idiom detection is fundamentally a **semantic task**
 
-Determine whether a phrase is used idiomatically or literally in context.
+### Context → Idiom (Main Contribution)
 
-### Idiom Meaning Retrieval
+| Model | Exact Match |
+|------|------------|
+| SBERT Retrieval | 0.461 |
+| FLAN-T5 | 0.678 |
+| **Hybrid (Proposed)** | **0.818** |
 
-Predict the semantic meaning of an idiom in English and Arabic.
+The proposed **generation-first hybrid model** improves:
+- +35.7% over retrieval
+- +14% over generation
 
-### Context-to-Idiom Prediction
+> This demonstrates that idiom prediction requires **both generative reasoning and retrieval grounding**.
 
-Predict the most appropriate idiom from a contextual sentence.
-
-### Cross-Lingual Idiom Retrieval
-
-Retrieve the correct English idiom from an Arabic sentence or semantic context.
-
-### Idiom Surface Normalization
-
-Map contextual idiom surface forms to canonical idiom entries.
+---
 
 ## Reproducibility
 
@@ -161,6 +204,53 @@ This repository is structured for full reproducibility. Each major module has it
 
 For environment setup and detailed execution instructions, refer to the module-specific README files.
 
+---
+## Pipeline Overview
+
+1. Data collection (WordNet, Wiktionary, etc.)
+2. Cleaning & normalization
+3. LLM-based enrichment (examples + meanings + translations)
+4. Validation & correction
+5. Dataset structuring
+6. Model training & evaluation
+
+---
+
+## Deep Learning Setup
+
+- All datasets are split **by idiom (not by row)** to prevent leakage
+- Supports reproducible experiments
+- Works both in:
+  - Jupyter Notebook
+  - Terminal execution
+  
+---
+
+## Dataset Access
+
+- 🤗 Hugging Face:  
+  https://huggingface.co/datasets/aymansharara/IdiomX  
+
+- 📊 Kaggle:  
+  https://www.kaggle.com/datasets/aymansharara/idiomx  
+
+- 📄 DOI (Zenodo):  
+  https://doi.org/10.5281/zenodo.19137833  
+  
+---
+
+## Research Paper
+
+The full research paper describing IdiomX and experiments is included in the repository.
+
+---
+
+## Limitations
+
+- Partial reliance on LLM-generated data
+- Arabic limited to Modern Standard Arabic
+- Exact-match evaluation may underestimate semantic correctness
+---
 ## Research Perspective
 
 IdiomX is intended as a benchmark-oriented research artifact rather than only a static dataset. The project is designed to support publication in NLP venues focused on lexical semantics, figurative language, multilingual NLP, and low-resource semantic transfer.
@@ -175,13 +265,31 @@ Current project checkpoint:
 * Data collection: completed
 * LLM enrichment: completed
 * Dataset verification: completed
-here:
+Dataset repository::
 https://github.com/aymanshar/idiomx-dataset
 
 * Deep learning benchmark preparation: in progress
 
+---
+
 ## Citation
 
-If you use IdiomX in academic work, please cite the associated paper once available.
+If you use IdiomX in your research, please cite:
+
+@dataset{idiomx2026,
+title={IdiomX: A Large-Scale Bilingual Dataset for Idiomatic Expression Understanding},
+author={Sharara, Ayman},
+year={2026}
+}
+
+---
+## Final Note
+
+IdiomX aims to push forward research in:
+- figurative language understanding  
+- multilingual NLP  
+- semantic reasoning  
+
+If you find this project useful, consider starring the repository.
 
 * * *

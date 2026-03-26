@@ -1,128 +1,227 @@
+# ============================================================
+# Arabic Context → Idiom (mT5)
+# Full Training + Evaluation Pipeline
+# ============================================================
+
+import os
+import json
+import random
 from pathlib import Path
+
 import pandas as pd
-
-from datasets import Dataset
-from transformers import (
-    AutoTokenizer,
-    AutoConfig,
-    AutoModelForSeq2SeqLM,
-    Seq2SeqTrainer,
-    Seq2SeqTrainingArguments,
-    DataCollatorForSeq2Seq
-)
-
-from sklearn.metrics import accuracy_score
 import torch
 
-DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
-print("Using device:", DEVICE)
-if torch.cuda.is_available():
-    print("GPU:", torch.cuda.get_device_name(0))
+from transformers import (
+    AutoTokenizer,
+    MT5ForConditionalGeneration,
+    Trainer,
+    TrainingArguments
+)
 
-config = AutoConfig.from_pretrained(MODEL_NAME)
-config.tie_word_embeddings = False
-
-# Resolve paths
-SCRIPT_DIR = Path(__file__).resolve().parent
-PROJECT_ROOT = SCRIPT_DIR.parent
-BASE_DIR = PROJECT_ROOT / "datasets" / "arabic_context_to_idiom"
-
-
-train_df = pd.read_csv(BASE_DIR / "train.csv")
-val_df = pd.read_csv(BASE_DIR / "validation.csv")
-test_df = pd.read_csv(BASE_DIR / "test.csv")
+# ------------------------------------------------------------
+# Utils
+# ------------------------------------------------------------
+def set_seed(seed=42):
+    random.seed(seed)
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed_all(seed)
 
 
-train_ds = Dataset.from_pandas(train_df[["input_text", "target_text"]])
-val_ds = Dataset.from_pandas(val_df[["input_text", "target_text"]])
-test_ds = Dataset.from_pandas(test_df[["input_text", "target_text"]])
+def load_csv_checked(path):
+    df = pd.read_csv(path)
+    if "input_text" not in df.columns or "target_text" not in df.columns:
+        raise ValueError("CSV must contain input_text and target_text")
+    return df
 
 
-MODEL_NAME = "google/mt5-base"
+# ------------------------------------------------------------
+# Dataset
+# ------------------------------------------------------------
+class Seq2SeqDataset(torch.utils.data.Dataset):
+    def __init__(self, encodings):
+        self.encodings = encodings
 
-tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME, use_fast=False)
+    def __len__(self):
+        return len(self.encodings["input_ids"])
 
-
-MAX_INPUT = 128
-MAX_TARGET = 32
-
-
-def preprocess(example):
-
-    model_inputs = tokenizer(
-        example["input_text"],
-        max_length=MAX_INPUT,
-        truncation=True,
-    )
-
-    labels = tokenizer(
-        example["target_text"],
-        max_length=MAX_TARGET,
-        truncation=True,
-    )
-
-    model_inputs["labels"] = labels["input_ids"]
-
-    return model_inputs
+    def __getitem__(self, idx):
+        return {k: torch.tensor(v[idx]) for k, v in self.encodings.items()}
 
 
-train_ds = train_ds.map(preprocess, batched=True)
-val_ds = val_ds.map(preprocess, batched=True)
-test_ds = test_ds.map(preprocess, batched=True)
+# ------------------------------------------------------------
+# Metrics
+# ------------------------------------------------------------
+def compute_exact_match(preds, labels):
+    correct = sum(p.strip() == l.strip() for p, l in zip(preds, labels))
+    return correct / len(preds)
 
 
-model = AutoModelForSeq2SeqLM.from_pretrained(MODEL_NAME,config=config)
-data_collator = DataCollatorForSeq2Seq(tokenizer=tokenizer, model=model)
-
-training_args = Seq2SeqTrainingArguments(
-
-    output_dir=str(PROJECT_ROOT / "models" / "mt5_arabic_context_to_idiom"),
-
+# ------------------------------------------------------------
+# Main Function
+# ------------------------------------------------------------
+def run_arabic_context_mt5(
+    train_csv,
+    val_csv,
+    test_csv,
+    model_name="google/mt5-base",
+    output_dir="models/mt5",
+    batch_size=8,
+    num_epochs=3,
+    max_input_length=128,
+    max_target_length=32,
     learning_rate=3e-5,
+    seed=42,
+):
 
-    per_device_train_batch_size=8,
-    per_device_eval_batch_size=8,
+    set_seed(seed)
 
-    num_train_epochs=3,
+    print("Running mT5 model for Task 3")
 
-    predict_with_generate=True,
+    train_df = load_csv_checked(train_csv)
+    val_df = load_csv_checked(val_csv)
+    test_df = load_csv_checked(test_csv)
 
-    eval_strategy="epoch",
-    save_strategy="epoch",
+    print(f"Train size: {len(train_df)}")
+    print(f"Val size: {len(val_df)}")
+    print(f"Test size: {len(test_df)}")
 
-    load_best_model_at_end=True,
-)
+    # ------------------------------------------------------------
+    # Load model
+    # ------------------------------------------------------------
+    print("\nLoading mT5 model...")
+    tokenizer = AutoTokenizer.from_pretrained(model_name, use_fast=False)
+
+    model = MT5ForConditionalGeneration.from_pretrained(
+        model_name,
+        use_safetensors=True
+    )
+
+    print("Model loaded")
+
+    # ------------------------------------------------------------
+    # Prompt
+    # ------------------------------------------------------------
+    def format_input(x):
+        return f"Translate Arabic context to English idiom: {x}"
+
+    train_df["input_fmt"] = train_df["input_text"].apply(format_input)
+    val_df["input_fmt"] = val_df["input_text"].apply(format_input)
+    test_df["input_fmt"] = test_df["input_text"].apply(format_input)
+
+    # ------------------------------------------------------------
+    # Tokenization
+    # ------------------------------------------------------------
+    def tokenize(texts, targets):
+        model_inputs = tokenizer(
+            texts,
+            max_length=max_input_length,
+            truncation=True,
+            padding="max_length"
+        )
+
+        labels = tokenizer(
+            targets,
+            max_length=max_target_length,
+            truncation=True,
+            padding="max_length"
+        )
+
+        model_inputs["labels"] = labels["input_ids"]
+        return model_inputs
+
+    print("\nTokenizing...")
+    train_enc = tokenize(train_df["input_fmt"].tolist(), train_df["target_text"].tolist())
+    val_enc = tokenize(val_df["input_fmt"].tolist(), val_df["target_text"].tolist())
+
+    train_dataset = Seq2SeqDataset(train_enc)
+    val_dataset = Seq2SeqDataset(val_enc)
+
+    print("Tokenization complete")
+
+    # ------------------------------------------------------------
+    # Training
+    # ------------------------------------------------------------
+    output_dir = Path(output_dir)
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    training_args = TrainingArguments(
+        output_dir=str(output_dir),
+        per_device_train_batch_size=batch_size,
+        per_device_eval_batch_size=batch_size,
+        num_train_epochs=num_epochs,
+        learning_rate=learning_rate,
+        logging_dir=str(output_dir / "logs"),
+        logging_steps=100,
+        save_steps=1000,
+        fp16=torch.cuda.is_available(),
+        save_total_limit=2,
+    )
+
+    trainer = Trainer(
+        model=model,
+        args=training_args,
+        train_dataset=train_dataset,
+        eval_dataset=val_dataset,
+    )
+
+    print("\nStarting training...")
+    trainer.train()
+
+    # ------------------------------------------------------------
+    # Evaluation
+    # ------------------------------------------------------------
+    print("\nEvaluating...")
+
+    def generate_predictions(df):
+        preds = []
+        for text in df["input_fmt"]:
+            inputs = tokenizer(text, return_tensors="pt", truncation=True).to(model.device)
+            outputs = model.generate(**inputs, max_length=max_target_length)
+            pred = tokenizer.decode(outputs[0], skip_special_tokens=True)
+            preds.append(pred)
+        return preds
+
+    val_preds = generate_predictions(val_df)
+    test_preds = generate_predictions(test_df)
+
+    val_em = compute_exact_match(val_preds, val_df["target_text"].tolist())
+    test_em = compute_exact_match(test_preds, test_df["target_text"].tolist())
+
+    results = {
+        "validation_exact_match": val_em,
+        "test_exact_match": test_em
+    }
+
+    print("\nResults:")
+    print(results)
+
+    # ------------------------------------------------------------
+    # Save
+    # ------------------------------------------------------------
+    with open(output_dir / "metrics.json", "w") as f:
+        json.dump(results, f, indent=2)
+
+    pd.DataFrame({
+        "input": val_df["input_text"],
+        "target": val_df["target_text"],
+        "prediction": val_preds
+    }).to_csv(output_dir / "val_predictions.csv", index=False)
+
+    print("\nSaved results to:", output_dir)
+
+    return results
 
 
-trainer = Seq2SeqTrainer(
-    model=model,
-    args=training_args,
-    train_dataset=train_ds,
-    eval_dataset=val_ds,
-    processing_class=tokenizer,
-    data_collator=data_collator,
-)
+# ------------------------------------------------------------
+# CLI
+# ------------------------------------------------------------
+def main():
+    run_arabic_context_mt5(
+        train_csv="data/train.csv",
+        val_csv="data/validation.csv",
+        test_csv="data/test.csv"
+    )
 
 
-print(f"Train rows: {len(train_df):,}")
-print(f"Validation rows: {len(val_df):,}")
-print(f"Test rows: {len(test_df):,}")
-
-trainer.train()
-
-
-print("\nEvaluating on test set...\n")
-
-predictions = trainer.predict(test_ds)
-
-pred_text = tokenizer.batch_decode(
-    predictions.predictions,
-    skip_special_tokens=True
-)
-
-true_text = test_df["target_text"].tolist()
-
-
-acc = accuracy_score(true_text, pred_text)
-
-print("Exact match accuracy:", acc)
+if __name__ == "__main__":
+    main()
