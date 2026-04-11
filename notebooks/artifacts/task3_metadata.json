@@ -1,6 +1,0 @@
-{
-  "bank_size": 105018,
-  "query_size": 15411,
-  "embedding_dim": 384,
-  "model": "paraphrase-multilingual-MiniLM-L12-v2"
-}
