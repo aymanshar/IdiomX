@@ -2,8 +2,11 @@
 
 ---
 
-[![Hugging Face](https://img.shields.io/badge/HuggingFace-Dataset-yellow?logo=huggingface)](https://huggingface.co/datasets/aymansharara/IdiomX)
-[![Kaggle](https://img.shields.io/badge/Kaggle-Dataset-blue?logo=kaggle)](https://www.kaggle.com/datasets/aymansharara/idiomx)
+[![Hugging Face Dataset](https://img.shields.io/badge/HuggingFace-Dataset-yellow?logo=huggingface)](https://huggingface.co/datasets/aymansharara/IdiomX)
+[![Kaggle Dataset](https://img.shields.io/badge/Kaggle-Dataset-blue?logo=kaggle)](https://www.kaggle.com/datasets/aymansharara/idiomx)
+[![Paper](https://img.shields.io/badge/Paper-Research-red)](paper/)
+[![Task2 Accuracy](https://img.shields.io/badge/Task2-Top1%20Accuracy%200.867-brightgreen)]
+[![Task3 Cross-Lingual](https://img.shields.io/badge/Task3-Cross--Lingual-blueviolet)]
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
 ---
