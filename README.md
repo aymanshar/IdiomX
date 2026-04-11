@@ -10,22 +10,23 @@
 
 ## Overview
 
-This repository contains the **benchmark experiments and modeling pipeline** for IdiomX.
+Understanding idiomatic language remains a major challenge in NLP due to its non-literal and context-dependent nature.
 
-The focus of this repo is:
+IdiomX introduces a unified benchmark framework for idiom understanding, spanning classification, contextual prediction, and cross-lingual retrieval.
 
+This repository focuses on:
 - evaluating idiom understanding tasks
 - building reproducible deep learning pipelines
 - demonstrating practical inference systems
 
-> This repository is NOT for dataset construction.  
-> The dataset is already finalized and publicly available.
+> This repository focuses on benchmarking and modeling.  
+> Dataset construction is described separately.
 
 ---
 
 ## Dataset
 
-We use the **high-quality final IdiomX dataset**, available here:
+We use the high-quality final IdiomX dataset, available here:
 
 - 🤗 Hugging Face: https://huggingface.co/datasets/aymansharara/IdiomX  
 - 📊 Kaggle: https://www.kaggle.com/datasets/aymansharara/idiomx  
@@ -35,6 +36,8 @@ The dataset includes:
 - Arabic translations and semantic alignment
 - idiomatic vs literal labels
 - multiple examples per idiom
+
+Although this work focuses on English–Arabic alignment, the pipeline is language-agnostic and can be extended to other languages.
 
 ---
 
@@ -69,7 +72,7 @@ The dataset includes:
 
 ## Benchmark Tasks
 
-This repository implements three main tasks:
+These tasks form a progressive evaluation setup, moving from classification to contextual reasoning and finally to cross-lingual semantic alignment.
 
 ### 1. Idiom Detection
 - classify idiomatic vs literal usage
@@ -87,7 +90,7 @@ Pipeline:
 - hybrid scoring
 - cross-encoder reranking
 
-This is the **core contribution of the project**.
+This task represents the primary contribution of the benchmark.
 
 ---
 
@@ -103,6 +106,8 @@ This task evaluates:
 
 ## How to Run
 
+### (Task 2: Context → Idiom)
+
 ### Option 1 — Full Reproduction
 
 Run the benchmark notebook:
@@ -110,9 +115,9 @@ Run the benchmark notebook:
 notebooks/Task2_Context_to_Idiom_Benchmark.ipynb
 
 This will:
-- train models  
+- train retrieval and reranking models  
 - evaluate performance  
-- generate artifacts  
+- generate task-specific artifacts  
 
 ---
 
@@ -129,39 +134,58 @@ This will:
 
 ---
 
+### Task 3 — Arabic → Idiom
+
+#### Option 1 — Full Benchmark
+
+Run:
+notebooks/Task3_Arabic_Semantic_Retrieval_Benchmark.ipynb
+
+#### Option 2 — Demo
+
+Run:
+notebooks/Task3_Arabic_Semantic_Retrieval_Demo.ipynb
+
+---
+
 ## Artifacts
 
-Artifacts are stored in:
-artifacts/task2/
+Artifacts are organized per task:
 
-These include:
+- `artifacts/task1/`  
+- `artifacts/task2/`  
+- `artifacts/task3/`  
+
+Example (Task 2):
 - idiom embeddings  
 - index mappings  
-- precomputed retrieval structures  
+- retrieval structures  
 
 If artifacts are missing:
-- run the benchmark notebook first  
+- run the corresponding benchmark notebook  
 
 ---
 
 ## Requirements
 
 Install dependencies:
+
 pip install -r requirements.txt
 
 Minimal requirements:
 
-
-sentence-transformers
-rank-bm25
-numpy
-pandas
-scikit-learn
-matplotlib
+- sentence-transformers  
+- rank-bm25  
+- numpy  
+- pandas  
+- scikit-learn  
+- matplotlib  
 
 ---
 
-## Key Results (Task 2)
+## Key Results
+
+### Task 2 — Context → Idiom
 
 | Model | Top-1 Accuracy |
 |------|--------------|
@@ -169,9 +193,21 @@ matplotlib
 | Hybrid | 0.763 |
 | Hybrid + Reranker | **0.867** |
 
-**Key insight:**
-- retrieval alone is not enough  
-- hybrid + reranking significantly improves performance  
+**Key insights:**
+- retrieval alone is insufficient  
+- hybrid retrieval improves performance  
+- reranking significantly boosts accuracy  
+
+---
+
+### Task 3 — Arabic → Idiom
+
+- strong semantic alignment across languages  
+- performance improves significantly after fine-tuning  
+- analysis includes:
+  - error distribution  
+  - hard negatives  
+  - confidence calibration  
 
 ---
 
@@ -181,11 +217,11 @@ This repository is designed to be:
 
 - fully reproducible  
 - notebook-driven  
-- easy to test  
+- easy to experiment with  
 
-Two usage modes are supported:
+Two usage modes:
 - full experiment reproduction  
-- lightweight inference demo  
+- lightweight inference demos  
 
 ---
 
@@ -211,7 +247,8 @@ Current project checkpoint:
 * Data collection: completed
 * LLM enrichment: completed
 * Dataset verification: completed
-Dataset repository::
+
+Dataset repository:
 https://github.com/aymanshar/idiomx-dataset
 
 * Deep learning benchmark preparation: in progress
