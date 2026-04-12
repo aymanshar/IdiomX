@@ -135,9 +135,16 @@ This task evaluates:
 - cross-lingual semantic alignment
 
 ---
+
 ## Interactive Demos (Hugging Face Spaces)
 
 We provide interactive demos for all tasks via Hugging Face Spaces:
+These demos allow users to interactively explore the IdiomX system:
+- Task 1 focuses on idiom detection
+- Task 2 demonstrates hybrid retrieval with reranking
+- Task 3 shows cross-lingual retrieval (Arabic → English)
+
+Each demo exposes model behavior and scoring, enabling qualitative analysis.
 
 ### Task 1 — Idiom Detection
 Detect whether a sentence contains an idiomatic expression.
@@ -157,7 +164,9 @@ Retrieve the most relevant idioms given a sentence using hybrid retrieval (dense
 Retrieve English idioms from Arabic input using a fine-tuned multilingual embedding model.
 
 🔗 https://huggingface.co/spaces/aymansharara/idiomx_arabic_context_to_idiom_demo
+
 ---
+
 ## How to Run
 
 ### (Task 2: Context → Idiom)
