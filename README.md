@@ -135,12 +135,34 @@ This task evaluates:
 - cross-lingual semantic alignment
 
 ---
+## Interactive Demos (Hugging Face Spaces)
 
+We provide interactive demos for all tasks via Hugging Face Spaces:
+
+### Task 1 — Idiom Detection
+Detect whether a sentence contains an idiomatic expression.
+
+🔗 https://huggingface.co/spaces/aymansharara/idiomX_idiom_detection_demo
+
+---
+
+### Task 2 — Context → Idiom Retrieval (Hybrid + Reranker)
+Retrieve the most relevant idioms given a sentence using hybrid retrieval (dense + BM25) followed by reranking.
+
+🔗 https://huggingface.co/spaces/aymansharara/idiomx_context_to_idiom_demo
+
+---
+
+### Task 3 — Arabic Context → English Idiom Retrieval
+Retrieve English idioms from Arabic input using a fine-tuned multilingual embedding model.
+
+🔗 https://huggingface.co/spaces/aymansharara/idiomx_arabic_context_to_idiom_demo
+---
 ## How to Run
 
 ### (Task 2: Context → Idiom)
 
-### Option 1 — Full Reproduction
+### 1. Full Benchmark
 
 Run the benchmark notebook:
 
@@ -153,7 +175,7 @@ This will:
 
 ---
 
-### Option 2 — Quick Demo (Recommended)
+### 2. Quick Demo
 
 Run the demo notebook:
 
@@ -168,12 +190,12 @@ This will:
 
 ### Task 3 — Arabic → Idiom
 
-#### Option 1 — Full Benchmark
+#### 1. Full Benchmark
 
 Run:
 notebooks/Task3_Arabic_Semantic_Retrieval_Benchmark.ipynb
 
-#### Option 2 — Demo
+#### 2. Quick Demo
 
 Run:
 notebooks/Task3_Arabic_Semantic_Retrieval_Demo.ipynb
