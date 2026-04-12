@@ -3,6 +3,9 @@
 ---
 
 [![Hugging Face Dataset](https://img.shields.io/badge/HuggingFace-Dataset-yellow?logo=huggingface)](https://huggingface.co/datasets/aymansharara/IdiomX)
+[![Task 1 Demo](https://img.shields.io/badge/Task1-Demo-blue)](https://huggingface.co/spaces/aymansharara/idiomX_idiom_detection_demo)
+[![Task 2 Demo](https://img.shields.io/badge/Task2-Demo-green)](https://huggingface.co/spaces/aymansharara/idiomx_context_to_idiom_demo)
+[![Task 3 Demo](https://img.shields.io/badge/Task3-Demo-orange)](https://huggingface.co/spaces/aymansharara/idiomx_arabic_context_to_idiom_demo)
 [![Kaggle Dataset](https://img.shields.io/badge/Kaggle-Dataset-blue?logo=kaggle)](https://www.kaggle.com/datasets/aymansharara/idiomx)
 [![Paper](https://img.shields.io/badge/Paper-Research-red)](paper/)
 [![Task2 Accuracy](https://img.shields.io/badge/Task2-Top1%20Accuracy%200.867-brightgreen)]
