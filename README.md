@@ -82,25 +82,19 @@ loading varient dataset from huggingface
 from datasets import load_dataset
 import pandas as pd
 
-# Full dataset
-df_full_train = load_dataset("aymansharara/IdiomX", "idiomx", split="idiomx_train").to_pandas()
-df_full_test = load_dataset("aymansharara/IdiomX", "idiomx", split="idiomx_test").to_pandas()
-df_full = pd.concat([df_full_train, df_full_test], ignore_index=True)
+# Full dataset load
+HF_DATASET_NAME = "aymansharara/IdiomX"
+HF_CONFIG_NAME = "idiomx_full"
 
-# Balanced dataset
-df_balanced_train = load_dataset("aymansharara/IdiomX", "idiomx_balanced", split="idiomx_balanced_train").to_pandas()
-df_balanced_test = load_dataset("aymansharara/IdiomX", "idiomx_balanced", split="idiomx_balanced_test").to_pandas()
-df_balanced = pd.concat([df_balanced_train, df_balanced_test], ignore_index=True)
+dataset = load_dataset(HF_DATASET_NAME, HF_CONFIG_NAME)
+df_raw = dataset["full"].to_pandas()
 
-# High-quality dataset
-df_high_quality_train = load_dataset("aymansharara/IdiomX", "idiomx_high_quality", split="idiomx_high_quality_train").to_pandas()
-df_high_quality_test = load_dataset("aymansharara/IdiomX", "idiomx_high_quality", split="idiomx_high_quality_test").to_pandas()
-df_high_quality = pd.concat([df_high_quality_train, df_high_quality_test], ignore_index=True)
+# task2 idiomx retrieval dataset load
+HF_DATASET_ID = "aymansharara/IdiomX"
+CONFIG_NAME = "task2_idiomx_retrieval_dataset"
 
-# Quick verification
-print("Full dataset shape:", df_full.shape)
-print("Balanced dataset shape:", df_balanced.shape)
-print("High-quality dataset shape:", df_high_quality.shape)
+dataset = load_dataset(HF_DATASET_ID, CONFIG_NAME)
+df = dataset[list(dataset.keys())[0]].to_pandas()
 
 ```
 ---
