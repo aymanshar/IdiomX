@@ -249,9 +249,10 @@ Minimal requirements:
 
 | Model | Top-1 Accuracy |
 |------|--------------|
-| MiniLM | 0.537 |
-| Hybrid | 0.763 |
-| Hybrid + Reranker | **0.867** |
+| Dense (MiniLM) | 0.640 |
+| Hybrid (MiniLM + BM25) | 0.7614 |
+| Hybrid + Reranker | 0.8380 |
+| Hybrid + Fine-Tuned Reranker | 0.8854 |
 
 **Key insights:**
 - retrieval alone is insufficient  
