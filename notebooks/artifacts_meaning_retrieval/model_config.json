@@ -1,0 +1,6 @@
+{
+  "embedding_model": "sentence-transformers/all-MiniLM-L6-v2",
+  "reranker_model": "cross-encoder/ms-marco-MiniLM-L-6-v2",
+  "retrieval_pipeline": "Hybrid + CrossEncoder Reranker",
+  "recommended_demo_model": "Hybrid_Rerank"
+}

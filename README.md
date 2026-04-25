@@ -1,18 +1,12 @@
-# IdiomX – Idiom Understanding Benchmark (Tasks & Experiments)
-
----
+# IdiomX — Benchmark and Interactive Studio for Idiom Understanding
 
 [![Hugging Face Dataset](https://img.shields.io/badge/HuggingFace-Dataset-yellow?logo=huggingface)](https://huggingface.co/datasets/aymansharara/IdiomX)
-[![Task 1 Demo](https://img.shields.io/badge/Task1-Demo-blue)](https://huggingface.co/spaces/aymansharara/idiomX_idiom_detection_demo)
-[![Task 2 Demo](https://img.shields.io/badge/Task2-Demo-green)](https://huggingface.co/spaces/aymansharara/idiomx_context_to_idiom_demo)
-[![Task 3 Demo](https://img.shields.io/badge/Task3-Demo-orange)](https://huggingface.co/spaces/aymansharara/idiomx_arabic_context_to_idiom_demo)
+[![IdiomX Studio](https://img.shields.io/badge/IdiomX-Studio-orange)](https://huggingface.co/spaces/aymansharara/idiomx-studio)
 [![Kaggle Dataset](https://img.shields.io/badge/Kaggle-Dataset-blue?logo=kaggle)](https://www.kaggle.com/datasets/aymansharara/idiomx)
-[![Paper](https://img.shields.io/badge/Paper-Research-red)](paper/)
-[![Task2 Accuracy](https://img.shields.io/badge/Task2-Top1%20Accuracy%200.867-brightgreen)]
-[![Task3 Cross-Lingual](https://img.shields.io/badge/Task3-Cross--Lingual-blueviolet)]
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
 ---
+
 
 ## Overview
 
@@ -61,14 +55,17 @@ Although this work focuses on English–Arabic alignment, the pipeline is langua
 	│   ├── Task2_Context_to_Idiom_Benchmark.ipynb
 	│   ├── Task2_Context_to_Idiom_Demo.ipynb
 	│   ├── Task3_Arabic_Semantic_Retrieval_Benchmark.ipynb
-	│   └── Task3_Arabic_Semantic_Retrieval_Demo.ipynb	
+	│   ├── Task3_Arabic_Semantic_Retrieval_Demo.ipynb
+	│   ├── task4_idiom_meaning_retrieval_Benchmark.ipynb
+	│   └── task4_idiom_meaning_retrieval_Demo.ipynb	
 	│
 	├── figures/
 	│
 	├── artifacts/
 	│   ├── task1/
 	│   ├── task2/
-	│   └── task3/
+	│   ├── task3/
+	│   └── task4/
 	│
 	├── paper/
 	│
@@ -133,34 +130,81 @@ This task evaluates:
 
 ---
 
-## Interactive Demos (Hugging Face Spaces)
+### 4. Idiom → meaning (ar, en, fr)
 
-We provide interactive demos for all tasks via Hugging Face Spaces:
-These demos allow users to interactively explore the IdiomX system:
-- Task 1 focuses on idiom detection
-- Task 2 demonstrates hybrid retrieval with reranking
-- Task 3 shows cross-lingual retrieval (Arabic → English)
+Given Idiom input, retrieve idiom meanings in (E, Ar, Fr).
 
-Each demo exposes model behavior and scoring, enabling qualitative analysis.
+This task evaluates:
+- multilingual understanding
+- cross-lingual semantic alignment
+
+---
+
+# Interactive IdiomX Studio (Main Demo)
+
+## Live Demo
+https://huggingface.co/spaces/aymansharara/idiomx-studio
+
+Unified interactive playground for:
 
 ### Task 1 — Idiom Detection
-Detect whether a sentence contains an idiomatic expression.
+Classify:
+- Idiomatic usage
+- Literal usage
 
-🔗 https://huggingface.co/spaces/aymansharara/idiomX_idiom_detection_demo
-
----
-
-### Task 2 — Context → Idiom Retrieval (Hybrid + Reranker)
-Retrieve the most relevant idioms given a sentence using hybrid retrieval (dense + BM25) followed by reranking.
-
-🔗 https://huggingface.co/spaces/aymansharara/idiomx_context_to_idiom_demo
+Example:
+- *She spilled the tea.* → Idiomatic  
+- *She spilled the tea on the floor.* → Literal
 
 ---
 
-### Task 3 — Arabic Context → English Idiom Retrieval
-Retrieve English idioms from Arabic input using a fine-tuned multilingual embedding model.
+### Task 2 — Context → Idiom Retrieval
+Given context:
 
-🔗 https://huggingface.co/spaces/aymansharara/idiomx_arabic_context_to_idiom_demo
+> He finally revealed the secret.
+
+Retrieve:
+
+> spill the beans
+
+Standalone advanced demo:
+https://huggingface.co/spaces/aymansharara/idiomx_context_to_idiom_demo
+
+---
+
+### Task 3 — Arabic → English Idiom Retrieval
+Arabic semantic input:
+
+> كشف السر بدون قصد
+
+Retrieve:
+
+> spill the beans
+
+Standalone demo:
+https://huggingface.co/spaces/aymansharara/idiomx_arabic_context_to_idiom_demo
+
+---
+
+### Task 4 — Multilingual Meaning Retrieval
+Retrieve idiom meanings in:
+
+- English
+- Arabic
+- French
+
+Example:
+
+**spill the tea**
+
+EN:
+Reveal gossip or personal secrets.
+
+AR:
+كشف الشائعات أو المعلومات السرية.
+
+FR:
+Révéler des potins ou معلومات شخصية.
 
 ---
 

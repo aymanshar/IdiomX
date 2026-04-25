@@ -1,0 +1,12 @@
+{
+  "production_pipeline": "Hybrid + CrossEncoder Reranker",
+  "artifacts": [
+    "final_retrieval_bank.parquet",
+    "final_retrieval_embeddings.npy",
+    "final_faiss.index",
+    "bm25_corpus_tokens.pkl",
+    "benchmark_metrics.json",
+    "topk_curve_results.csv",
+    "model_config.json"
+  ]
+}
