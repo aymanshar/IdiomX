@@ -130,13 +130,11 @@ This task evaluates:
 
 ---
 
-### 4. Idiom → meaning (ar, en, fr)
-
-Given Idiom input, retrieve idiom meanings in (E, Ar, Fr).
-
-This task evaluates:
-- multilingual understanding
-- cross-lingual semantic alignment
+### 4. Multilingual Idiom Meaning Retrieval
+Given an idiom surface form:
+- retrieve meanings
+- multilingual explanations
+- support human learning + semantic interpretation
 
 ---
 
