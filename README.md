@@ -6,6 +6,12 @@
 [![Kaggle Dataset](https://img.shields.io/badge/Kaggle-Dataset-blue?logo=kaggle)](https://www.kaggle.com/datasets/aymansharara/idiomx)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
+<p align="center">
+  <img src="figures/IdiomX_Cover.png" width="100%">
+</p>
+
+> Teaching AI that *“spill the tea”* has nothing to do with tea.
+
 ---
 
 ## Overview
@@ -119,6 +125,14 @@ https://github.com/aymanshar/idiomx-dataset
 ## Benchmark Tasks
 
 IdiomX defines a progressive 4-task benchmark pipeline for idiomatic language understanding, moving from recognition to retrieval to semantic interpretation.
+
+### Four-Task Benchmark Pipeline
+
+<p align="center">
+  <img src="figures/IdiomX_Tasks_Pipeline_v2.png" width="95%">
+</p>
+
+---
 
 ### Task 1 — Idiom Detection
 Goal: determine whether an expression in context is used idiomatically or literally.
@@ -285,31 +299,21 @@ https://huggingface.co/spaces/aymansharara/idiomx-studio
 
 ---
 
-## Artifacts
+## Installation
 
-Artifacts are organized per task:
-
-- `artifacts/task1/`  
-- `artifacts/task2/`  
-- `artifacts/task3/`  
-- `artifacts/task4/`  
-
----
-
-## Requirements
-
-Install dependencies:
-
+```bash
+git clone https://github.com/aymanshar/IdiomX
+cd IdiomX
 pip install -r requirements.txt
+```
 
-Minimal requirements:
+The repository includes all dependencies for:
+- Task 1: Idiom Detection
+- Task 2: Context-to-Idiom Retrieval
+- Task 3: Arabic-to-English Retrieval
+- Task 4: Idiom Interpretation
 
-- sentence-transformers  
-- rank-bm25  
-- numpy  
-- pandas  
-- scikit-learn  
-- matplotlib  
+See `requirements.txt` for the complete environment.
 
 ---
 

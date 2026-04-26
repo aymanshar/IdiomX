@@ -1,20 +1,41 @@
+# =========================================
+# IdiomX Core Dependencies (All 4 Tasks)
+# =========================================
+
+# Deep learning / transformer models
 torch
 transformers
 datasets
-tqdm
-pandas
-numpy
-matplotlib
-scikit-learn
-requests
-rank-bm25
-sentence-transformers
-peft
 accelerate
 evaluate
+peft
 sentencepiece
-rdflib
-tiktoken
-protobuf
+
+# Semantic retrieval and embeddings
+sentence-transformers
+rank-bm25
+
+# Classical machine learning / baselines
+scikit-learn
 xgboost
+
+# Data processing
+pandas
+numpy
+
+# Visualization / analysis
+matplotlib
+
+# Utilities
+tqdm
+requests
+protobuf
+tiktoken
+
+# Knowledge / graph utilities
+rdflib
+
+# Hugging Face / demos
+huggingface_hub
+gradio
 hf_xet
