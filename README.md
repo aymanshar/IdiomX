@@ -1,4 +1,4 @@
-# IdiomX: A Multilingual Benchmark for Idiom Understanding, Retrieval and Semantic Interpretation
+# IdiomX: A Multilingual Benchmark for Idiom Understanding, Retrieval, and Semantic Interpretation
 
 [![GitHub stars](https://img.shields.io/github/stars/aymanshar/IdiomX?style=social)](...)
 [![Hugging Face Dataset](https://img.shields.io/badge/HuggingFace-Dataset-yellow?logo=huggingface)](https://huggingface.co/datasets/aymansharara/IdiomX)
@@ -321,7 +321,7 @@ See `requirements.txt` for the complete environment.
 
 | Task | Best Model | Main Metric | Result |
 |------|------------|-------------|--------|
-| Task 1: Idiom Detection | RoBERTa | Accuracy / F1 | 92.6% |
+| Task 1: Idiom Detection | RoBERTa | Accuracy / F1 | 92.6% / 0.926 |
 | Task 2: Context → Idiom | Hybrid + Fine-Tuned Reranker | Top-1 | 88.5% |
 | Task 3: Arabic → English Idiom | Fine-Tuned E5 | Top-1 | 57.8% |
 | Task 4: Idiom Interpretation | Hybrid + Reranker | Top-1 | 67.4% |
@@ -372,11 +372,13 @@ paper/
 
 If you use IdiomX in your research, please cite:
 
+```bibtex
 @dataset{idiomx2026,
-title={IdiomX: A Multilingual Benchmark for Idiom Understanding, Retrieval and Semantic Interpretation},
-author={Sharara, Ayman},
-year={2026}
+  title={IdiomX: A Multilingual Benchmark for Idiom Understanding, Retrieval and Semantic Interpretation},
+  author={Sharara, Ayman},
+  year={2026}
 }
+```
 
 ---
 ## Final Note
@@ -386,5 +388,7 @@ IdiomX aims to push forward research in:
 - multilingual NLP  
 - semantic reasoning  
 
+```md
 If you find this project useful, consider starring the repository.
+```
 ---
