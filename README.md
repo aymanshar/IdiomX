@@ -1,5 +1,6 @@
 # IdiomX — Benchmark and Interactive Studio for Idiom Understanding
 
+[![GitHub stars](https://img.shields.io/github/stars/aymanshar/IdiomX?style=social)](...)
 [![Hugging Face Dataset](https://img.shields.io/badge/HuggingFace-Dataset-yellow?logo=huggingface)](https://huggingface.co/datasets/aymansharara/IdiomX)
 [![IdiomX Studio](https://img.shields.io/badge/IdiomX-Studio-orange)](https://huggingface.co/spaces/aymansharara/idiomx-studio)
 [![Kaggle Dataset](https://img.shields.io/badge/Kaggle-Dataset-blue?logo=kaggle)](https://www.kaggle.com/datasets/aymansharara/idiomx)
@@ -12,7 +13,7 @@
 
 Understanding idiomatic language remains a major challenge in NLP due to its non-literal and context-dependent nature.
 
-IdiomX introduces a unified benchmark framework for idiom understanding, spanning classification, contextual prediction, and cross-lingual retrieval.
+IdiomX introduces a unified benchmark framework for idiom understanding, spanning idiom detection, semantic retrieval, cross-lingual alignment, and multilingual idiom interpretation.
 
 This repository focuses on:
 - evaluating idiom understanding tasks
@@ -22,22 +23,36 @@ This repository focuses on:
 > This repository focuses on benchmarking and modeling.  
 > Dataset construction is described separately.
 
+**Dataset Snapshot**  
+📊 190K+ examples • 🧠 12K+ idioms • 🌍 3 languages • 🎯 4 benchmark tasks
+
 ---
 
 ## Dataset
 
-We use the high-quality final IdiomX dataset, available here:
+We use the high-quality final IdiomX dataset and release the full construction pipeline publicly:
 
-- 🤗 Hugging Face: https://huggingface.co/datasets/aymansharara/IdiomX  
-- 📊 Kaggle: https://www.kaggle.com/datasets/aymansharara/idiomx  
+Resources:
+- 🤗 Hugging Face Dataset  
+https://huggingface.co/datasets/aymansharara/IdiomX
+
+- 📊 Kaggle Dataset  
+https://www.kaggle.com/datasets/aymansharara/idiomx
+
+- ⚙️ Dataset Construction Pipeline (GitHub)  
+https://github.com/aymanshar/idiomx-dataset
+
+- 🧠 Models and Benchmarks (GitHub)
+https://github.com/aymanshar/IdiomX
 
 The dataset includes:
 - English idioms with contextual examples
 - Arabic translations and semantic alignment
+- French translations and semantic alignment
 - idiomatic vs literal labels
 - multiple examples per idiom
 
-Although this work focuses on English–Arabic alignment, the pipeline is language-agnostic and can be extended to other languages.
+Although this repository focuses on benchmarking and models, the full data collection, enrichment, validation, and dataset construction pipeline is available in the separate IdiomX dataset repository.
 
 ---
 
@@ -72,8 +87,10 @@ Although this work focuses on English–Arabic alignment, the pipeline is langua
 	└── README.md
 ```
 ---
-### loading dataset 
-loading varient dataset from huggingface
+## Loading the Dataset
+ 
+Example loading from Hugging Face:
+
 ```python
 # 1.1 load datasets
 from datasets import load_dataset
@@ -94,47 +111,171 @@ dataset = load_dataset(HF_DATASET_ID, CONFIG_NAME)
 df = dataset[list(dataset.keys())[0]].to_pandas()
 
 ```
+
+For the full data collection and enrichment pipeline, see:
+https://github.com/aymanshar/idiomx-dataset
+
 ---
 
 ## Benchmark Tasks
 
-These tasks form a progressive evaluation setup, moving from classification to contextual reasoning and finally to cross-lingual semantic alignment.
+IdiomX defines a progressive 4-task benchmark pipeline for idiomatic language understanding, moving from recognition to retrieval to semantic interpretation.
 
-### 1. Idiom Detection
-- classify idiomatic vs literal usage
-- transformer-based models (e.g., DeBERTa)
+### Task 1 — Idiom Detection
+Goal: determine whether an expression in context is used idiomatically or literally.
+
+Input:
+- sentence containing an expression
+
+Output:
+- idiomatic / literal label
+
+Models:
+- TF-IDF + Logistic Regression
+- DistilBERT
+- RoBERTa (best performing)
+
+Example:
+
+Literal:
+She spilled the tea on the floor.
+
+Idiomatic:
+She spilled the tea about the meeting.
+
+Focus:
+- contextual disambiguation
+- figurative language detection
 
 ---
 
-### 2. Context → Idiom (Main Task)
+### Task 2 — Context → Idiom Retrieval
+Goal: given a sentence, retrieve the idiom that best matches the meaning.
 
-Given a sentence, predict the correct idiom.
+Input:
+- contextual sentence
 
-Pipeline:
-- dense retrieval (MiniLM)
-- lexical retrieval (BM25)
-- hybrid scoring
-- cross-encoder reranking
+Output:
+- ranked idiom candidates
 
-This task represents the primary contribution of the benchmark.
+Retrieval Pipeline:
+- Dense retrieval (MiniLM)
+- BM25 lexical retrieval
+- Hybrid retrieval
+- Cross-encoder reranker
+- Fine-tuned reranker
+
+Example:
+
+Input:
+He finally revealed the secret.
+
+Prediction:
+spill the beans
+
+Focus:
+- semantic retrieval
+- context to idiom mapping
 
 ---
 
-### 3. Arabic → Idiom (Cross-lingual)
+### Task 3 — Arabic Context → English Idiom Retrieval
+Goal: retrieve the correct English idiom from Arabic context.
 
-Given Arabic input, retrieve the corresponding English idiom.
+Input:
+- Arabic contextual sentence
 
-This task evaluates:
-- multilingual understanding
+Output:
+- ranked English idioms
+
+Models:
+- Multilingual MiniLM
+- Multilingual E5
+- Fine-tuned E5 (best)
+
+Example:
+
+Input:
+كشف السر بدون قصد
+
+Prediction:
+spill the beans
+
+Focus:
 - cross-lingual semantic alignment
+- multilingual idiom retrieval
 
 ---
 
-### 4. Multilingual Idiom Meaning Retrieval
-Given an idiom surface form:
-- retrieve meanings
-- multilingual explanations
-- support human learning + semantic interpretation
+### Task 4 — Idiom Interpretation
+Goal: retrieve and explain idiomatic meaning in multiple languages.
+
+Input:
+- idiom or idiomatic sentence
+
+Output:
+- canonical idiom
+- English meaning
+- Arabic meaning
+- French meaning
+
+Example:
+
+Input:
+spill the tea
+
+EN:
+Reveal gossip or personal secrets.
+
+AR:
+كشف الشائعات أو الأسرار.
+
+FR:
+Révéler des potins.
+
+Models:
+- Dense retrieval
+- Hybrid retrieval
+- Hybrid + reranker (best)
+
+Focus:
+- semantic grounding
+- explainable idiom understanding
+- multilingual interpretation
+
+---
+
+## Unified Benchmark Progression
+
+The four tasks form one pipeline:
+
+Task 1  
+Expression Detection  
+(sentence → idiomatic or literal)
+
+↓
+
+Task 2  
+Contextual Retrieval  
+(context → idiom)
+
+↓
+
+Task 3  
+Cross-Lingual Retrieval  
+(Arabic context → English idiom)
+
+↓
+
+Task 4  
+Idiom Interpretation  
+(idiom/context → multilingual meaning)
+
+This progression moves from:
+- detection  
+- retrieval  
+- cross-lingual alignment  
+- explainable semantic interpretation
 
 ---
 
@@ -142,111 +283,6 @@ Given an idiom surface form:
 
 ## Live Demo
 https://huggingface.co/spaces/aymansharara/idiomx-studio
-
-Unified interactive playground for:
-
-### Task 1 — Idiom Detection
-Classify:
-- Idiomatic usage
-- Literal usage
-
-Example:
-- *She spilled the tea.* → Idiomatic  
-- *She spilled the tea on the floor.* → Literal
-
----
-
-### Task 2 — Context → Idiom Retrieval
-Given context:
-
-> He finally revealed the secret.
-
-Retrieve:
-
-> spill the beans
-
-Standalone advanced demo:
-https://huggingface.co/spaces/aymansharara/idiomx_context_to_idiom_demo
-
----
-
-### Task 3 — Arabic → English Idiom Retrieval
-Arabic semantic input:
-
-> كشف السر بدون قصد
-
-Retrieve:
-
-> spill the beans
-
-Standalone demo:
-https://huggingface.co/spaces/aymansharara/idiomx_arabic_context_to_idiom_demo
-
----
-
-### Task 4 — Multilingual Meaning Retrieval
-Retrieve idiom meanings in:
-
-- English
-- Arabic
-- French
-
-Example:
-
-**spill the tea**
-
-EN:
-Reveal gossip or personal secrets.
-
-AR:
-كشف الشائعات أو المعلومات السرية.
-
-FR:
-Révéler des potins ou معلومات شخصية.
-
----
-
-## How to Run
-
-### (Task 2: Context → Idiom)
-
-### 1. Full Benchmark
-
-Run the benchmark notebook:
-
-notebooks/Task2_Context_to_Idiom_Benchmark.ipynb
-
-This will:
-- train retrieval and reranking models  
-- evaluate performance  
-- generate task-specific artifacts  
-
----
-
-### 2. Quick Demo
-
-Run the demo notebook:
-
-notebooks/Task2_Context_to_Idiom_Demo.ipynb
-
-This will:
-- load precomputed artifacts  
-- allow testing custom sentences  
-- return ranked idiom predictions  
-
----
-
-### Task 3 — Arabic → Idiom
-
-#### 1. Full Benchmark
-
-Run:
-notebooks/Task3_Arabic_Semantic_Retrieval_Benchmark.ipynb
-
-#### 2. Quick Demo
-
-Run:
-notebooks/Task3_Arabic_Semantic_Retrieval_Demo.ipynb
 
 ---
 
@@ -257,14 +293,7 @@ Artifacts are organized per task:
 - `artifacts/task1/`  
 - `artifacts/task2/`  
 - `artifacts/task3/`  
-
-Example (Task 2):
-- idiom embeddings  
-- index mappings  
-- retrieval structures  
-
-If artifacts are missing:
-- run the corresponding benchmark notebook  
+- `artifacts/task4/`  
 
 ---
 
@@ -285,32 +314,25 @@ Minimal requirements:
 
 ---
 
-## Key Results
+## Benchmark Summary
 
-### Task 2 — Context → Idiom
+| Task | Best Model | Main Metric | Result |
+|------|------------|-------------|--------|
+| Task 1: Idiom Detection | RoBERTa | Accuracy / F1 | 92.6% |
+| Task 2: Context → Idiom | Hybrid + Fine-Tuned Reranker | Top-1 | 88.5% |
+| Task 3: Arabic → English Idiom | Fine-Tuned E5 | Top-1 | 57.8% |
+| Task 4: Idiom Interpretation | Hybrid + Reranker | Top-1 | 67.4% |
 
-| Model | Top-1 Accuracy |
-|------|--------------|
-| Dense (MiniLM) | 0.640 |
-| Hybrid (MiniLM + BM25) | 0.7614 |
-| Hybrid + Reranker | 0.8380 |
-| Hybrid + Fine-Tuned Reranker | 0.8854 |
+**Highlights**
+- Strong transformer performance for idiom detection  
+- Hybrid retrieval consistently outperforms dense-only baselines  
+- Fine-tuning substantially improves cross-lingual retrieval  
+- Task 4 introduces explainable idiom meaning retrieval
 
-**Key insights:**
-- retrieval alone is insufficient  
-- hybrid retrieval improves performance  
-- reranking significantly boosts accuracy  
-
----
-
-### Task 3 — Arabic → Idiom
-
-- strong semantic alignment across languages  
-- performance improves significantly after fine-tuning  
-- analysis includes:
-  - error distribution  
-  - hard negatives  
-  - confidence calibration  
+See full benchmark details in:
+- paper/
+- notebooks/
+- Hugging Face demos
 
 ---
 
@@ -332,6 +354,7 @@ Two usage modes:
 
 The full research paper is available in:
 paper/
+
 ---
 
 ## Limitations
@@ -342,28 +365,12 @@ paper/
 
 ---
 
-## Status
-
-Current project checkpoint:
-
-
-* Data collection: completed
-* LLM enrichment: completed
-* Dataset verification: completed
-
-Dataset repository:
-https://github.com/aymanshar/idiomx-dataset
-
-* Deep learning benchmark preparation: in progress
-
----
-
 ## Citation
 
 If you use IdiomX in your research, please cite:
 
 @dataset{idiomx2026,
-title={IdiomX: A Large-Scale Bilingual Dataset for Idiomatic Expression Understanding},
+title={IdiomX: A Multilingual Benchmark for Idiom Understanding, Retrieval and Semantic Interpretation},
 author={Sharara, Ayman},
 year={2026}
 }
