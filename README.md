@@ -1,4 +1,4 @@
-# IdiomX — Benchmark and Interactive Studio for Idiom Understanding
+# IdiomX: A Multilingual Benchmark for Idiom Understanding, Retrieval and Semantic Interpretation
 
 [![GitHub stars](https://img.shields.io/github/stars/aymanshar/IdiomX?style=social)](...)
 [![Hugging Face Dataset](https://img.shields.io/badge/HuggingFace-Dataset-yellow?logo=huggingface)](https://huggingface.co/datasets/aymansharara/IdiomX)
@@ -7,7 +7,6 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
 ---
-
 
 ## Overview
 
@@ -42,7 +41,7 @@ https://www.kaggle.com/datasets/aymansharara/idiomx
 - ⚙️ Dataset Construction Pipeline (GitHub)  
 https://github.com/aymanshar/idiomx-dataset
 
-- 🧠 Models and Benchmarks (GitHub)
+- 🧠 Models and Benchmarks (GitHub)  
 https://github.com/aymanshar/IdiomX
 
 The dataset includes:
@@ -112,7 +111,7 @@ df = dataset[list(dataset.keys())[0]].to_pandas()
 
 ```
 
-For the full data collection and enrichment pipeline, see:
+For the full data collection and enrichment pipeline, see:  
 https://github.com/aymanshar/idiomx-dataset
 
 ---
